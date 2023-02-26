@@ -30,3 +30,27 @@ Feature: User CRUD operations
     When delete user by id
     Then user is successfully deleted
 
+
+  Scenario Outline: Get user
+    When get user by id
+      |  id  |
+      | <id> |
+    Then user data is displayed
+    Examples:
+      |id  |
+      |2   |
+
+  Scenario Outline: User not found
+    When get user by id
+      | id   |
+      | <id> |
+    Then user is not found
+    Examples:
+      | id |
+      | 23  |
+
+  Scenario: Get user list
+    When get user list
+    Then user list is not empty
+
+

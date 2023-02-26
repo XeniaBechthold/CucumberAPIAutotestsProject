@@ -1,12 +1,15 @@
 package steps;
 
-import dto.AuthSuccessResponse;
 import dto.UserCreateResponse;
+import dto.UserGetResponse;
 import dto.UserUpdateResponse;
+import dto.UsersListResponse;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import io.restassured.http.ContentType;
+import io.restassured.response.Response;
+import io.restassured.specification.RequestSpecification;
 import org.testng.Assert;
 
 import java.util.List;
@@ -17,19 +20,24 @@ import static io.restassured.RestAssured.given;
 public class UserSteps {
 
 
+    RequestSpecification requestSpecification = given()
+            .contentType(ContentType.JSON)
+            .baseUri("https://reqres.in")
+            .basePath("api");
     UserCreateResponse userCreateResponse;
 
     UserUpdateResponse userUpdateResponse;
+
+    Response userResponse;
+
+    UsersListResponse usersListResponse;
 
     @When("create user with name and job")
     public void createUserWithNameAndJob(DataTable table) {
         List<Map<String, String>> dataTable = table.asMaps();
         String name = dataTable.get(0).get("name");
         String job = dataTable.get(0).get("job");
-        userCreateResponse = given()
-                .contentType(ContentType.JSON)
-                .baseUri("https://reqres.in")
-                .basePath("api")
+        userCreateResponse = requestSpecification
                 .body("{\n" +
                         "    \"name\": \""+ name +"\",\n" +
                         "    \"job\": \""+ job+ "\"\n" +
@@ -46,10 +54,7 @@ public class UserSteps {
     public void updateUserWithNameAndJob(DataTable table) {
         List<Map<String, String>> dataTable = table.asMaps();
         String job = dataTable.get(0).get("job");
-            userUpdateResponse = given()
-                    .contentType(ContentType.JSON)
-                    .baseUri("https://reqres.in")
-                    .basePath("api")
+            userUpdateResponse = requestSpecification
                     .body("{\n" +
                             "    \"job\": \""+ job+ "\"\n" +
                             "}")
@@ -62,10 +67,7 @@ public class UserSteps {
 
     @When("delete user by id")
     public void deleteUserbyId() {
-        given()
-                .contentType(ContentType.JSON)
-                .baseUri("https://reqres.in")
-                .basePath("api")
+        requestSpecification
                 .delete("delete/2")
                 .then()
                 .statusCode(204);
@@ -88,5 +90,41 @@ public class UserSteps {
     @Then("user is successfully deleted")
     public void userIsSuccessfullyDeleted() {
         System.out.println("user is successfully deleted");
+    }
+
+    @Then("user data is displayed")
+    public void userDataIsDisplayed() {
+        UserGetResponse userGetResponse = userResponse.then().statusCode(200).extract().as(UserGetResponse.class);
+        System.out.println("user is successfully found");
+    }
+
+    @When("get user by id")
+    public void getUserById(DataTable table) {
+        List<Map<String, String>> dataTable = table.asMaps();
+        int id = Integer.parseInt(dataTable.get(0).get("id"));
+        userResponse = requestSpecification
+                .get("users/" + id);
+    }
+
+    @Then("user is not found")
+    public void userIsNotFound() {
+        userResponse.then().statusCode(404);
+        System.out.println("user is not found");
+    }
+
+
+    @When("get user list")
+    public void getUserList() {
+       usersListResponse =  requestSpecification
+                .get("users?page=2")
+                .then()
+                .statusCode(200)
+               .extract()
+               .as(UsersListResponse.class);
+    }
+
+    @Then("user list is not empty")
+    public void userListIsNotEmpty() {
+       Assert.assertEquals(usersListResponse.total, usersListResponse.per_page* usersListResponse.page);
     }
 }
