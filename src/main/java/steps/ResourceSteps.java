@@ -27,7 +27,8 @@ public class ResourceSteps {
 
     @Then("resource data is displayed")
     public void resourceDataIsDisplayed() {
-        RsourceGetResponse resourceGetResponse = resourceResponse.then().statusCode(200).extract().as(RsourceGetResponse.class);
+        ResourceGetResponse resourceGetResponse = resourceResponse.then().statusCode(200).extract().as(ResourceGetResponse.class);
+        Assert.assertEquals(resourceGetResponse.data.id, 2);
         System.out.println("user is successfully found");
     }
 
@@ -58,6 +59,7 @@ public class ResourceSteps {
 
     @Then("resource list is not empty")
     public void resourceListIsNotEmpty() {
+        Assert.assertEquals(resourceListResponse.data.length, 6);
        Assert.assertEquals(resourceListResponse.total, resourceListResponse.per_page* resourceListResponse.page);
     }
 }

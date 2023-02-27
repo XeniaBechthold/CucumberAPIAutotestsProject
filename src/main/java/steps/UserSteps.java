@@ -28,7 +28,9 @@ public class UserSteps {
 
     UserUpdateResponse userUpdateResponse;
 
-    Response userResponse;
+    UserGetResponse userResponse;
+
+    Response response;
 
     UsersListResponse usersListResponse;
 
@@ -94,21 +96,21 @@ public class UserSteps {
 
     @Then("user data is displayed")
     public void userDataIsDisplayed() {
-        UserGetResponse userGetResponse = userResponse.then().statusCode(200).extract().as(UserGetResponse.class);
-        System.out.println("user is successfully found");
+        userResponse = response.then().statusCode(200).extract().as(UserGetResponse.class);
+        Assert.assertEquals(userResponse.data.id, 2);
     }
 
     @When("get user by id")
     public void getUserById(DataTable table) {
         List<Map<String, String>> dataTable = table.asMaps();
         int id = Integer.parseInt(dataTable.get(0).get("id"));
-        userResponse = requestSpecification
-                .get("users/" + id);
+        response = requestSpecification
+                .get("users/"+id);
     }
 
     @Then("user is not found")
     public void userIsNotFound() {
-        userResponse.then().statusCode(404);
+        response.then().statusCode(404);
         System.out.println("user is not found");
     }
 
@@ -119,12 +121,13 @@ public class UserSteps {
                 .get("users?page=2")
                 .then()
                 .statusCode(200)
-               .extract()
-               .as(UsersListResponse.class);
+                .extract()
+                .as(UsersListResponse.class);
     }
 
     @Then("user list is not empty")
     public void userListIsNotEmpty() {
+        Assert.assertEquals(usersListResponse.data.length, 6);
        Assert.assertEquals(usersListResponse.total, usersListResponse.per_page* usersListResponse.page);
     }
 }

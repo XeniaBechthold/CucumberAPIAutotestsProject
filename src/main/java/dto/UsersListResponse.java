@@ -6,6 +6,6 @@ public class UsersListResponse {
     public int per_page;
     public int total;
     public int total_pages;
-    public UserDataResponse [] users;
+    public UserDataResponse [] data;
     public SupportResponse support;
 }
